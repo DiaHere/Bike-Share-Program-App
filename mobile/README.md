@@ -20,7 +20,12 @@ Shortcuts: `npm run ios`, `npm run android`, `npm run web`.
 
 ```bash
 npx tsc --noEmit   # typecheck
+npm run lint       # ESLint (expo lint)
 npx expo-doctor    # diagnose dependency/config issues
 ```
+
+## Screens
+
+Navigation uses [Expo Router](https://docs.expo.dev/router/introduction/). Every file in `src/app/` is a screen, and `_layout.tsx` sets up the navigator. Put components, hooks and utilities outside `src/app/` and import them with the `@/` alias (for example `@/components/Button`).
 
 Add packages with `npx expo install <package>` so versions match the Expo SDK.
