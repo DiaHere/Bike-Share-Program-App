@@ -10,7 +10,11 @@ Prototype bike share app for Whitman College. Three independent top-level folder
 - `admin/` — Next.js (App Router, TypeScript) admin site. Routes live in `admin/app/`.
 - `docs/` — Markdown documentation.
 
-There is no shared code or backend yet; the two apps do not import from each other.
+There is no shared code; the two apps do not import from each other.
+
+## Backend
+
+Supabase (Postgres + row-level security) is the shared backend for both apps; see the Backend section of `README.md`. The project is not wired into either app yet. When adding it, use `@supabase/supabase-js` (in `mobile/`, install via `npx expo install`), read keys from env vars (`EXPO_PUBLIC_*` in mobile, `NEXT_PUBLIC_*` in admin), never commit keys, and enforce access with RLS policies rather than client-side checks.
 
 ## Commands
 
