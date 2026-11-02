@@ -22,6 +22,7 @@ Shortcuts: `npm run ios`, `npm run android`, `npm run web`.
 npx tsc --noEmit   # typecheck
 npm run lint       # ESLint (expo lint)
 npx expo-doctor    # diagnose dependency/config issues
+npm run check:supabase  # confirm .env can reach Supabase
 ```
 
 ## Screens
