@@ -10,6 +10,10 @@ Prototype bike share app for Whitman College. Three independent top-level folder
 - `admin/` — Next.js (App Router, TypeScript) admin site. Routes live in `admin/app/`.
 - `docs/` — Markdown documentation.
 
+## UI theme
+
+All UI in both apps follows `docs/theme.md` (Whitman College colors, fonts, spacing, buttons and navigation). Read it before writing or changing any screen, and use its tokens instead of hard-coded colors or fonts. If a screen needs something the theme doesn't cover, add it to `docs/theme.md` first.
+
 There is no shared code; the two apps do not import from each other.
 
 ## Backend
