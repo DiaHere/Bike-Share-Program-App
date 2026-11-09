@@ -1,0 +1,133 @@
+.shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  flex: none;
+  width: 232px;
+  background: var(--color-primary-dark);
+  color: #fff;
+  padding: var(--space-5) 0;
+}
+
+.brand {
+  padding: 0 var(--space-5) var(--space-5);
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.nav {
+  list-style: none;
+}
+
+.link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-5);
+  border-left: 4px solid transparent;
+  color: #fff;
+  text-decoration: none;
+}
+
+.link:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.active {
+  border-left-color: var(--color-accent);
+  background: rgba(255, 255, 255, 0.08);
+  font-weight: 700;
+}
+
+.disabled {
+  color: rgba(255, 255, 255, 0.55);
+  cursor: default;
+}
+
+.disabled:hover {
+  background: transparent;
+}
+
+.soon {
+  font-size: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 999px;
+  padding: 0 var(--space-2);
+}
+
+.main {
+  flex: 1;
+  min-width: 0;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  height: 56px;
+  padding: 0 var(--space-5);
+  /* leave room for the toast in the top-right corner */
+  padding-right: 280px;
+  color: var(--color-text-muted);
+}
+
+.menuButton {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  width: 44px;
+  height: 44px;
+  margin-right: auto;
+  border: 0;
+  background: transparent;
+}
+
+.menuButton span {
+  display: block;
+  height: 2px;
+  margin: 0 10px;
+  background: var(--color-primary);
+}
+
+.content {
+  padding: 0 var(--space-5) var(--space-7);
+}
+
+.scrim {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 30;
+    transform: translateX(-100%);
+    transition: transform 0.2s ease;
+  }
+
+  .open {
+    transform: translateX(0);
+  }
+
+  .scrim {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    background: rgba(0, 21, 62, 0.4);
+  }
+
+  .menuButton {
+    display: flex;
+  }
+
+  .topbar {
+    padding-right: var(--space-5);
+  }
+}
