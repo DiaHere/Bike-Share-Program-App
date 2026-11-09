@@ -78,7 +78,7 @@ Mobile text must scale with iOS Dynamic Type. Don't set `allowFontScaling={false
 
 | Kind | Fill | Text | When |
 | --- | --- | --- | --- |
-| Main action (student app) | Gold | Navy | One per screen: Scan to unlock, Unlock bike, Return bike |
+| Main action (student app) | Gold | Navy | One per screen, from Sprint 5: Scan to unlock, Unlock bike, Return bike |
 | Primary | Blue | White | Confirmations and saves (admin Save, Add station) |
 | Secondary | White, Blue border | Blue | Alternatives (Choose a bike instead, Cancel) |
 | Destructive | White, red border | Red | Deactivate, End rental early, Place hold |
@@ -87,8 +87,11 @@ Labels say what happens: "Unlock bike 07", not "OK" or "Submit".
 
 ## Navigation
 
-- **Student app (pending):** bottom tab bar with three tabs: Map, My ride, Account. Selected tab Blue, others `textMuted`. The main action button sits above the tab bar.
-- **Admin site:** fixed left sidebar, Navy background, white labels. The active item has a 4 px gold bar on the left and a bold label. Sections in order: Dashboard, Stations, Bikes, Rentals, Reports. Below 900 px wide the sidebar collapses behind a menu button. A top bar shows the page title on the left and the signed-in admin with Sign out on the right.
+From the team's sketches (November 2026).
+
+- **Student app:** one home screen. A top bar with the app name and a menu icon (account, settings and about come later), and a report placeholder until Sprint 8. Below it, the station pins, and a white bottom panel that lists a station's available bikes when its pin is pressed. A campus map goes behind the pins in Sprint 10.
+- **Admin site:** fixed left sidebar, Navy background, white labels. The active item has a 4 px gold bar on the left and a bold label. Items: Dashboard, Stations & bikes, Reports (Dashboard and Reports are marked "Soon" until their sprints). The page title is a dropdown that switches between the Stations and Bikes tables. Below 900 px wide the sidebar collapses behind a menu button.
+- **Admin tables:** double-click a row, or pick Edit from its ⋯ options, to edit it in place. "Add station" and "Add bike" open a form that slides in from the right. Every save shows "Saved" with a check, or "Saving failed" with an X, in the top-right corner.
 
 ## Logo and name
 
