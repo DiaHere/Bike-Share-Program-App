@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { supabase } from "@/lib/supabase";
 import styles from "./AdminShell.module.css";
 
 // Sidebar from the sketch: Dashboard, Stations and bikes, Reports.
@@ -68,6 +69,9 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             <span />
           </button>
           <span className={styles.admin}>Test admin</span>
+          <button type="button" className={styles.signOut} onClick={() => supabase.auth.signOut()}>
+            Sign out
+          </button>
         </div>
         <main className={styles.content}>{children}</main>
       </div>

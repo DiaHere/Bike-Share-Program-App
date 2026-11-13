@@ -1,21 +1,22 @@
 "use client";
 
-import { createContext, useCallback, useContext, useRef, useState } from "react";
-import { sampleBikes, sampleStations } from "@/lib/sample-data";
-import type { Bike, Station } from "@/lib/types";
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import { supabase } from "@/lib/supabase";
+import type { Bike, Station, StationInput } from "@/lib/types";
 import Toast, { type ToastState } from "./Toast";
 
-// Interface only: data lives in memory and resets on reload.
-// Sprints 2 and 3 swap these functions for Supabase calls.
+// Stations and bikes come from Supabase. The checks below give friendly messages;
+// the database constraints and row-level security are the real guard.
 
 type SaveResult = { ok: true } | { ok: false; message: string };
 
 type DataContextValue = {
   stations: Station[];
   bikes: Bike[];
-  saveStation: (station: Station, isNew: boolean) => SaveResult;
-  saveBike: (bike: Bike, isNew: boolean) => SaveResult;
-  setStationActive: (id: string, isActive: boolean) => void;
+  loading: boolean;
+  saveStation: (station: StationInput, isNew: boolean) => Promise<SaveResult>;
+  saveBike: (bike: Bike, isNew: boolean) => Promise<SaveResult>;
+  setStationActive: (id: string, isActive: boolean) => Promise<void>;
   showSaved: () => void;
   showFailed: (message?: string) => void;
 };
@@ -28,7 +29,7 @@ export function useData(): DataContextValue {
   return value;
 }
 
-function validateStation(station: Station, stations: Station[]): string | null {
+function validateStation(station: StationInput, stations: Station[]): string | null {
   if (!station.name.trim()) return "Station name is required.";
   if (stations.some((s) => s.id !== station.id && s.name.trim().toLowerCase() === station.name.trim().toLowerCase())) {
     return "A station with that name already exists.";
@@ -54,9 +55,37 @@ function validateBike(bike: Bike, bikes: Bike[]): string | null {
   return null;
 }
 
+async function fetchAll(): Promise<{ stations: Station[]; bikes: Bike[] }> {
+  const [stations, bikes] = await Promise.all([
+    supabase.from("station_availability").select("*").order("name"),
+    supabase.from("bikes").select("id, number, station_id, status").order("number"),
+  ]);
+  if (stations.error) throw stations.error;
+  if (bikes.error) throw bikes.error;
+  return {
+    stations: stations.data.map((s) => ({
+      id: s.id,
+      name: s.name,
+      latitude: s.latitude,
+      longitude: s.longitude,
+      capacity: s.capacity,
+      isActive: s.is_active,
+      availableBikes: s.available_bikes,
+    })),
+    bikes: bikes.data.map((b) => ({ id: b.id, number: b.number, stationId: b.station_id, status: b.status })),
+  };
+}
+
+function saveErrorMessage(error: { code?: string }): string {
+  if (error.code === "23505") return "That name or number is already in use.";
+  if (error.code === "42501") return "Only admins can make changes.";
+  return "Could not reach the database. Check your connection and try again.";
+}
+
 export default function DataProvider({ children }: { children: React.ReactNode }) {
-  const [stations, setStations] = useState<Station[]>(sampleStations);
-  const [bikes, setBikes] = useState<Bike[]>(sampleBikes);
+  const [stations, setStations] = useState<Station[]>([]);
+  const [bikes, setBikes] = useState<Bike[]>([]);
+  const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState<ToastState | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -69,44 +98,102 @@ export default function DataProvider({ children }: { children: React.ReactNode }
   const showSaved = useCallback(() => show({ kind: "saved" }), [show]);
   const showFailed = useCallback((message?: string) => show({ kind: "failed", message }), [show]);
 
-  const saveStation = useCallback(
-    (station: Station, isNew: boolean): SaveResult => {
-      const error = validateStation(station, stations);
+  const reload = useCallback(async () => {
+    try {
+      const data = await fetchAll();
+      setStations(data.stations);
+      setBikes(data.bikes);
+    } catch {
+      show({ kind: "failed", message: "Could not load stations and bikes. Reload the page to try again." });
+    }
+    setLoading(false);
+  }, [show]);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchAll().then(
+      (data) => {
+        if (cancelled) return;
+        setStations(data.stations);
+        setBikes(data.bikes);
+        setLoading(false);
+      },
+      () => {
+        if (cancelled) return;
+        show({ kind: "failed", message: "Could not load stations and bikes. Reload the page to try again." });
+        setLoading(false);
+      },
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [show]);
+
+  // Every save goes to the database, then the tables reload so counts stay correct.
+  const finish = useCallback(
+    async (error: { code?: string } | null): Promise<SaveResult> => {
       if (error) {
-        showFailed(error);
-        return { ok: false, message: error };
+        const message = saveErrorMessage(error);
+        showFailed(message);
+        return { ok: false, message };
       }
-      setStations((prev) => (isNew ? [...prev, station] : prev.map((s) => (s.id === station.id ? station : s))));
+      await reload();
       showSaved();
       return { ok: true };
     },
-    [stations, showFailed, showSaved],
+    [reload, showFailed, showSaved],
+  );
+
+  const saveStation = useCallback(
+    async (station: StationInput, isNew: boolean): Promise<SaveResult> => {
+      const invalid = validateStation(station, stations);
+      if (invalid) {
+        showFailed(invalid);
+        return { ok: false, message: invalid };
+      }
+      const row = {
+        name: station.name,
+        latitude: station.latitude,
+        longitude: station.longitude,
+        capacity: station.capacity,
+        is_active: station.isActive,
+      };
+      const { error } = isNew
+        ? await supabase.from("stations").insert(row)
+        : await supabase.from("stations").update(row).eq("id", station.id);
+      return finish(error);
+    },
+    [stations, showFailed, finish],
   );
 
   const saveBike = useCallback(
-    (bike: Bike, isNew: boolean): SaveResult => {
-      const error = validateBike(bike, bikes);
-      if (error) {
-        showFailed(error);
-        return { ok: false, message: error };
+    async (bike: Bike, isNew: boolean): Promise<SaveResult> => {
+      const invalid = validateBike(bike, bikes);
+      if (invalid) {
+        showFailed(invalid);
+        return { ok: false, message: invalid };
       }
-      setBikes((prev) => (isNew ? [...prev, bike] : prev.map((b) => (b.id === bike.id ? bike : b))));
-      showSaved();
-      return { ok: true };
+      const row = { number: bike.number, station_id: bike.stationId, status: bike.status };
+      const { error } = isNew
+        ? await supabase.from("bikes").insert(row)
+        : await supabase.from("bikes").update(row).eq("id", bike.id);
+      return finish(error);
     },
-    [bikes, showFailed, showSaved],
+    [bikes, showFailed, finish],
   );
 
   const setStationActive = useCallback(
-    (id: string, isActive: boolean) => {
-      setStations((prev) => prev.map((s) => (s.id === id ? { ...s, isActive } : s)));
-      showSaved();
+    async (id: string, isActive: boolean) => {
+      const { error } = await supabase.from("stations").update({ is_active: isActive }).eq("id", id);
+      await finish(error);
     },
-    [showSaved],
+    [finish],
   );
 
   return (
-    <DataContext.Provider value={{ stations, bikes, saveStation, saveBike, setStationActive, showSaved, showFailed }}>
+    <DataContext.Provider
+      value={{ stations, bikes, loading, saveStation, saveBike, setStationActive, showSaved, showFailed }}
+    >
       {children}
       <Toast toast={toast} onClose={() => setToast(null)} />
     </DataContext.Provider>

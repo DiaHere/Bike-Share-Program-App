@@ -91,6 +91,7 @@ From the team's sketches (November 2026).
 
 - **Student app:** one home screen. A top bar with the app name and a menu icon (account, settings and about come later), and a report placeholder until Sprint 8. Below it, the station pins, and a white bottom panel that lists a station's available bikes when its pin is pressed. A campus map goes behind the pins in Sprint 10.
 - **Admin site:** fixed left sidebar, Navy background, white labels. The active item has a 4 px gold bar on the left and a bold label. Items: Dashboard, Stations & bikes, Reports (Dashboard and Reports are marked "Soon" until their sprints). The page title is a dropdown that switches between the Stations and Bikes tables. Below 900 px wide the sidebar collapses behind a menu button.
+- **Admin sign-in:** a white card centered on the Cool Gray page, with the name in Lora, email and password fields, and one Primary "Sign in" button. Errors show in the alert red below the fields. A "Sign out" text button sits in the top bar.
 - **Admin tables:** double-click a row, or pick Edit from its ⋯ options, to edit it in place. "Add station" and "Add bike" open a form that slides in from the right. Every save shows "Saved" with a check, or "Saving failed" with an X, in the top-right corner.
 
 ## Logo and name

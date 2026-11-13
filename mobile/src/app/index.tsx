@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import StationPin from '@/components/StationPin';
-import { availableBikes, loadStations, type PreviewMode, type StationsResult } from '@/data/sample';
+import { loadStations, type PreviewMode, type StationsResult } from '@/data/stations';
 import { colors, fonts, radius, space } from '@/theme';
 
 type LoadState =
@@ -51,7 +51,7 @@ export default function HomeScreen() {
   const stations = state.kind === 'ready' ? state.data.stations : [];
   const bikes = state.kind === 'ready' ? state.data.bikes : [];
   const selected = stations.find((s) => s.id === selectedId) ?? null;
-  const selectedBikes = selected ? availableBikes(bikes, selected.id) : [];
+  const selectedBikes = selected ? bikes.filter((b) => b.stationId === selected.id) : [];
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
@@ -105,7 +105,7 @@ export default function HomeScreen() {
                 <StationPin
                   key={s.id}
                   name={s.name}
-                  available={availableBikes(bikes, s.id).length}
+                  available={s.availableBikes}
                   selected={s.id === selectedId}
                   onPress={() => setSelectedId(s.id === selectedId ? null : s.id)}
                 />

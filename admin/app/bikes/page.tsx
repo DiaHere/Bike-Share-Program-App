@@ -13,10 +13,8 @@ type Draft = { number: string; stationId: string; status: BikeStatus };
 
 const EMPTY_DRAFT: Draft = { number: "", stationId: "", status: "available" };
 
-let newBikeCounter = 0;
-
 export default function BikesPage() {
-  const { stations, bikes, saveBike } = useData();
+  const { stations, bikes, loading, saveBike } = useData();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState<Draft>(EMPTY_DRAFT);
   const [adding, setAdding] = useState(false);
@@ -34,13 +32,12 @@ export default function BikesPage() {
     setDraft({ number: b.number, stationId: b.stationId ?? "", status: b.status });
   }
 
-  function saveEdit(b: Bike) {
-    if (saveBike(toBike(b.id, draft), false).ok) setEditingId(null);
+  async function saveEdit(b: Bike) {
+    if ((await saveBike(toBike(b.id, draft), false)).ok) setEditingId(null);
   }
 
-  function saveNew() {
-    newBikeCounter += 1;
-    if (saveBike(toBike(`new-${Date.now()}-${newBikeCounter}`, newDraft), true).ok) {
+  async function saveNew() {
+    if ((await saveBike(toBike("", newDraft), true)).ok) {
       setAdding(false);
       setNewDraft(EMPTY_DRAFT);
     }
@@ -80,7 +77,7 @@ export default function BikesPage() {
             {bikes.length === 0 && (
               <tr>
                 <td colSpan={4} className={ui.empty}>
-                  No bikes yet. Add the first one.
+                  {loading ? "Loading bikes…" : "No bikes yet. Add the first one."}
                 </td>
               </tr>
             )}
