@@ -52,6 +52,8 @@ export default function HomeScreen() {
   const bikes = state.kind === 'ready' ? state.data.bikes : [];
   const selected = stations.find((s) => s.id === selectedId) ?? null;
   const selectedBikes = selected ? bikes.filter((b) => b.stationId === selected.id) : [];
+  const availableCount = selectedBikes.filter((b) => b.status === 'available').length;
+  const inUseCount = selectedBikes.length - availableCount;
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
@@ -114,7 +116,7 @@ export default function HomeScreen() {
           )}
         </View>
 
-        {/* Bottom panel: empty until a station is pressed, then that station's available bikes. */}
+        {/* Bottom panel: empty until a station is pressed, then that station's available bikes, then its in-use bikes. */}
         <View style={styles.sheet}>
           {!selected ? (
             <Text style={styles.sheetHint}>
@@ -125,26 +127,33 @@ export default function HomeScreen() {
               <Text style={styles.sheetTitle} accessibilityRole="header">
                 {selected.name}
               </Text>
-              <Text style={[styles.sheetCount, selectedBikes.length === 0 && { color: colors.textMuted }]}>
-                {selectedBikes.length} {selectedBikes.length === 1 ? 'bike' : 'bikes'} available
+              <Text style={[styles.sheetCount, availableCount === 0 && { color: colors.textMuted }]}>
+                {inUseCount === 0
+                  ? `${availableCount} ${availableCount === 1 ? 'bike' : 'bikes'} available`
+                  : `${availableCount} available · ${inUseCount} in use`}
               </Text>
               {selectedBikes.length === 0 ? (
                 <Text style={styles.sheetHint}>No bikes here right now. Try another station.</Text>
               ) : (
-                selectedBikes.map((b) => (
-                  <View
-                    key={b.id}
-                    style={styles.bikeRow}
-                    accessible
-                    accessibilityLabel={`Bike ${b.number}, available`}
-                  >
-                    <Text style={styles.bikeNumber}>Bike {b.number}</Text>
-                    <View style={styles.statusWrap}>
-                      <View style={styles.statusDot} />
-                      <Text style={styles.statusText}>Available</Text>
+                selectedBikes.map((b) => {
+                  const inUse = b.status === 'in_use';
+                  const label = inUse ? 'In use' : 'Available';
+                  const tone = inUse ? colors.statusInUse : colors.statusAvailable;
+                  return (
+                    <View
+                      key={b.id}
+                      style={styles.bikeRow}
+                      accessible
+                      accessibilityLabel={`Bike ${b.number}, ${label.toLowerCase()}`}
+                    >
+                      <Text style={[styles.bikeNumber, inUse && { color: colors.textMuted }]}>Bike {b.number}</Text>
+                      <View style={styles.statusWrap}>
+                        <View style={[styles.statusDot, { backgroundColor: tone }]} />
+                        <Text style={[styles.statusText, { color: tone }]}>{label}</Text>
+                      </View>
                     </View>
-                  </View>
-                ))
+                  );
+                })
               )}
             </>
           )}

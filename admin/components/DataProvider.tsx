@@ -57,7 +57,8 @@ function validateBike(bike: Bike, bikes: Bike[]): string | null {
 
 async function fetchAll(): Promise<{ stations: Station[]; bikes: Bike[] }> {
   const [stations, bikes] = await Promise.all([
-    supabase.from("station_availability").select("*").order("name"),
+    // Active stations first, then by name.
+    supabase.from("station_availability").select("*").order("is_active", { ascending: false }).order("name"),
     supabase.from("bikes").select("id, number, station_id, status").order("number"),
   ]);
   if (stations.error) throw stations.error;

@@ -27,7 +27,7 @@ npm run check:supabase  # confirm .env can reach Supabase
 
 ## Data
 
-The home screen reads stations and available bikes from the shared Supabase project, using the keys in `.env`. It needs no sign-in. Restart `npm start` after changing `.env`.
+The home screen reads stations and their available and in-use bikes from the shared Supabase project, using the keys in `.env`. It needs no sign-in. Restart `npm start` after changing `.env`.
 
 ## Screens
 

@@ -22,6 +22,14 @@ export default function BikesPage() {
 
   const activeStations = stations.filter((s) => s.isActive);
   const stationName = (id: string | null) => stations.find((s) => s.id === id)?.name ?? "No station";
+  // By station name, then bike number. Bikes without a station go last.
+  const sortedBikes = [...bikes].sort((a, b) => {
+    if (!a.stationId !== !b.stationId) return a.stationId ? -1 : 1;
+    return (
+      stationName(a.stationId).localeCompare(stationName(b.stationId)) ||
+      a.number.localeCompare(b.number, undefined, { numeric: true })
+    );
+  });
 
   function toBike(id: string, d: Draft): Bike {
     return { id, number: d.number.trim(), stationId: d.stationId || null, status: d.status };
@@ -81,7 +89,7 @@ export default function BikesPage() {
                 </td>
               </tr>
             )}
-            {bikes.map((b) => {
+            {sortedBikes.map((b) => {
               const editing = editingId === b.id;
               return (
                 <tr
