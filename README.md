@@ -23,6 +23,18 @@ Why Supabase over Firebase:
 
 Keys go in environment files (`.env`), never in the repo. See [`.env.example`](.env.example) for the variable names.
 
+### Set up your environment
+
+1. Open the Supabase dashboard → Project Settings → API. Copy the project URL and the publishable key. Never use the secret key in either app.
+2. Create `mobile/.env` and `admin/.env.local` with the variables from [`.env.example`](.env.example). Git ignores both files.
+3. Run `npm run check:supabase` in each app folder. It reports a missing variable or a failed connection.
+4. Restart the dev server after you change an env file.
+5. Start each app with the steps in [mobile/README.md](mobile/README.md) and [admin/README.md](admin/README.md).
+
+Vercel builds the admin site, so the two `NEXT_PUBLIC_SUPABASE_*` variables must also be set in the Vercel project's Environment Variables. The build fails without them.
+
+The Sprint 2 end-to-end check (admin website to phone) is recorded in [issue #9](https://github.com/DiaHere/Bike-Share-Program-App/issues/9).
+
 ### Database schema
 
 Table changes live in [`supabase/migrations/`](supabase/migrations) and run in filename order. Test data lives in [`supabase/seed.sql`](supabase/seed.sql) and is safe to rerun.
