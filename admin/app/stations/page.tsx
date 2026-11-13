@@ -8,8 +8,7 @@ import PageHeader from "@/components/PageHeader";
 import RowMenu from "@/components/RowMenu";
 import StatusBadge from "@/components/StatusBadge";
 import ui from "@/components/ui.module.css";
-import { availableCount } from "@/lib/sample-data";
-import type { Station } from "@/lib/types";
+import type { Station, StationInput } from "@/lib/types";
 
 type Draft = { name: string; latitude: string; longitude: string; capacity: string };
 
@@ -19,9 +18,10 @@ function toDraft(s: Station): Draft {
   return { name: s.name, latitude: String(s.latitude), longitude: String(s.longitude), capacity: String(s.capacity) };
 }
 
-function fromDraft(base: Pick<Station, "id" | "isActive">, d: Draft): Station {
+function fromDraft(base: Pick<Station, "id" | "isActive">, d: Draft): StationInput {
   return {
-    ...base,
+    id: base.id,
+    isActive: base.isActive,
     name: d.name.trim(),
     latitude: Number.parseFloat(d.latitude),
     longitude: Number.parseFloat(d.longitude),
@@ -29,13 +29,8 @@ function fromDraft(base: Pick<Station, "id" | "isActive">, d: Draft): Station {
   };
 }
 
-function nextStationId(stations: Station[]): string {
-  const max = stations.reduce((m, s) => Math.max(m, Number(s.id.replace(/\D/g, "")) || 0), 0);
-  return `ST-${String(max + 1).padStart(2, "0")}`;
-}
-
 export default function StationsPage() {
-  const { stations, bikes, saveStation, setStationActive } = useData();
+  const { stations, loading, saveStation, setStationActive } = useData();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState<Draft>(EMPTY_DRAFT);
   const [adding, setAdding] = useState(false);
@@ -47,21 +42,21 @@ export default function StationsPage() {
     setDraft(toDraft(s));
   }
 
-  function saveEdit(s: Station) {
-    if (saveStation(fromDraft(s, draft), false).ok) setEditingId(null);
+  async function saveEdit(s: Station) {
+    if ((await saveStation(fromDraft(s, draft), false)).ok) setEditingId(null);
   }
 
   function deactivate(s: Station) {
-    if (availableCount(bikes, s.id) > 0) {
+    if (s.availableBikes > 0) {
       setBlocked(s);
       return;
     }
     setStationActive(s.id, false);
   }
 
-  function saveNew() {
-    const station = fromDraft({ id: nextStationId(stations), isActive: true }, newDraft);
-    if (saveStation(station, true).ok) {
+  async function saveNew() {
+    const station = fromDraft({ id: "", isActive: true }, newDraft);
+    if ((await saveStation(station, true)).ok) {
       setAdding(false);
       setNewDraft(EMPTY_DRAFT);
     }
@@ -92,13 +87,12 @@ export default function StationsPage() {
             {stations.length === 0 && (
               <tr>
                 <td colSpan={8} className={ui.empty}>
-                  No stations yet. Add the first one.
+                  {loading ? "Loading stations…" : "No stations yet. Add the first one."}
                 </td>
               </tr>
             )}
             {stations.map((s) => {
               const editing = editingId === s.id;
-              const available = availableCount(bikes, s.id);
               return (
                 <tr
                   key={s.id}
@@ -110,7 +104,7 @@ export default function StationsPage() {
                     if (e.key === "Escape") setEditingId(null);
                   }}
                 >
-                  <td className="tabular">{s.id}</td>
+                  <td className="tabular">{s.id.slice(0, 8)}</td>
                   <td>
                     {editing ? (
                       <input
@@ -125,7 +119,7 @@ export default function StationsPage() {
                     )}
                   </td>
                   <td className={`${ui.num} tabular`}>
-                    {available} of {s.capacity}
+                    {s.availableBikes} of {s.capacity}
                   </td>
                   <td className={`${ui.num} tabular`}>
                     {editing ? (

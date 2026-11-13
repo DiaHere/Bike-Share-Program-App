@@ -5,7 +5,11 @@ export type Station = {
   longitude: number;
   capacity: number;
   isActive: boolean;
+  /** Live count from the station_availability view. Read-only. */
+  availableBikes: number;
 };
+
+export type StationInput = Omit<Station, "availableBikes">;
 
 export type BikeStatus = "available" | "in_use" | "maintenance" | "missing";
 

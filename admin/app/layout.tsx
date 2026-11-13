@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Figtree, Lora } from "next/font/google";
 import AdminShell from "@/components/AdminShell";
+import AuthGate from "@/components/AuthGate";
 import DataProvider from "@/components/DataProvider";
 import "./globals.css";
 
@@ -17,9 +18,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${lora.variable} ${figtree.variable}`}>
       <body>
-        <DataProvider>
-          <AdminShell>{children}</AdminShell>
-        </DataProvider>
+        <AuthGate>
+          <DataProvider>
+            <AdminShell>{children}</AdminShell>
+          </DataProvider>
+        </AuthGate>
       </body>
     </html>
   );

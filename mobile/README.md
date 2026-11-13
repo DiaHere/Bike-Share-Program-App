@@ -25,6 +25,10 @@ npx expo-doctor    # diagnose dependency/config issues
 npm run check:supabase  # confirm .env can reach Supabase
 ```
 
+## Data
+
+The home screen reads stations and available bikes from the shared Supabase project, using the keys in `.env`. It needs no sign-in. Restart `npm start` after changing `.env`.
+
 ## Screens
 
 Navigation uses [Expo Router](https://docs.expo.dev/router/introduction/). Every file in `src/app/` is a screen, and `_layout.tsx` sets up the navigator. Put components, hooks and utilities outside `src/app/` and import them with the `@/` alias (for example `@/components/Button`).

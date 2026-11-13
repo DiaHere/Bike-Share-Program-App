@@ -7,7 +7,10 @@ export type RowMenuItem = { label: string; onSelect: () => void; danger?: boolea
 
 // The options button at the end of each row.
 export default function RowMenu({ label, items }: { label: string; items: RowMenuItem[] }) {
-  const [open, setOpen] = useState(false);
+  // The menu is placed with fixed coordinates so the table card's scroll area can't clip it.
+  const [pos, setPos] = useState<{ top: number; right: number } | null>(null);
+  const open = pos !== null;
+  const setOpen = (next: false) => setPos(next || null);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -18,11 +21,18 @@ export default function RowMenu({ label, items }: { label: string; items: RowMen
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") setOpen(false);
     }
+    function onScroll() {
+      setOpen(false);
+    }
     document.addEventListener("mousedown", onDown);
     document.addEventListener("keydown", onKey);
+    window.addEventListener("scroll", onScroll, true);
+    window.addEventListener("resize", onScroll);
     return () => {
       document.removeEventListener("mousedown", onDown);
       document.removeEventListener("keydown", onKey);
+      window.removeEventListener("scroll", onScroll, true);
+      window.removeEventListener("resize", onScroll);
     };
   }, [open]);
 
@@ -34,12 +44,15 @@ export default function RowMenu({ label, items }: { label: string; items: RowMen
         aria-label={`Options for ${label}`}
         aria-haspopup="menu"
         aria-expanded={open}
-        onClick={() => setOpen((v) => !v)}
+        onClick={(e) => {
+          const rect = e.currentTarget.getBoundingClientRect();
+          setPos(open ? null : { top: rect.bottom + 4, right: window.innerWidth - rect.right });
+        }}
       >
         ⋯
       </button>
       {open && (
-        <ul className={ui.menu} role="menu">
+        <ul className={ui.menu} role="menu" style={pos}>
           {items.map((item) => (
             <li key={item.label} role="none">
               <button
