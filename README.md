@@ -33,11 +33,13 @@ Keys go in environment files (`.env`), never in the repo. See [`.env.example`](.
 
 Vercel builds the admin site, so the two `NEXT_PUBLIC_SUPABASE_*` variables must also be set in the Vercel project's Environment Variables. The build fails without them.
 
-The Sprint 2 end-to-end check (admin website to phone) is recorded in [issue #9](https://github.com/DiaHere/Bike-Share-Program-App/issues/9).
+The admin-to-iPhone test results are recorded in [Sprint 2 issue #9](https://github.com/DiaHere/Bike-Share-Program-App/issues/9) for stations and [Sprint 3 issue #25](https://github.com/DiaHere/Bike-Share-Program-App/issues/25) for bike availability.
 
 ### Database schema
 
-Table changes live in [`supabase/migrations/`](supabase/migrations) and run in filename order. Test data lives in [`supabase/seed.sql`](supabase/seed.sql) and is safe to rerun.
+Table changes live in [`supabase/migrations/`](supabase/migrations) and run in filename order.
+
+For a test database, run [`supabase/seed.sql`](supabase/seed.sql) after the migrations. It adds two test stations, each with one available bike and one bike in maintenance. Rerunning it skips existing station names and bike numbers. Changes made in the admin site are saved in the connected Supabase database.
 
 | Table | Sprint | Who can read | Who can add or update |
 | --- | --- | --- | --- |
